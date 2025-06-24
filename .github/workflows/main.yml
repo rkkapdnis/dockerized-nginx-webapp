@@ -1,0 +1,38 @@
+name: Deploy to Nginx Server
+
+on:
+  push:
+    paths:
+      - '**.html'
+      - '**.sh'
+      - Dockerfile
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "."
+        target: "/home/${{ secrets.USERNAME }}/webapp"
+
+    - name: SSH and rebuild container
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd ~/webapp
+          docker stop webapp2 || true
+          docker rm webapp2 || true
+          docker build -t my-nginx-webapp .
+          docker run -d -p 8081:80 --name webapp2 my-nginx-webapp
