@@ -6,5 +6,6 @@
 </head>
 <body>
     <h1>Welcome to the {{IP_ADDRES}}</h1>
+    <p>✅ Deployment test successful!</p>
 </body>
 </html>
